@@ -49,14 +49,21 @@ var decorator = module.exports = function (options, protect) {
 
   controller.vivify = function (path) {
     var definition = controller.model().schema.path(path);
-    var ref = definition.caster.options.ref;
-
-    if (definition.caster.instance !== 'ObjectID') {
-      throw baucis.Error.Configuration('Only paths with a type of ObjectId can be vivified');
-    }
-    if (!ref) {
-      throw baucis.Error.Configuration('Only paths that reference another collection can be vivified');
-    }
+	 var ref = path;
+	 if (definition) {
+		 ref = definition.caster.options.ref;		 
+		 if (definition.caster.instance !== 'ObjectID') {
+			throw baucis.Error.Configuration('Only paths with a type of ObjectId can be vivified');
+		 }
+		 if (!ref) {
+			throw baucis.Error.Configuration('Only paths that reference another collection can be vivified or are virtuals');
+		 }
+	 } else {
+		 definition = controller.model().schema.virtuals[path];
+		 if (!definition) {
+			throw baucis.Error.Configuration('Only paths with a type of ObjectId can be vivified or are virtuals');
+		 }
+	 }
 
     var child = baucis.Controller(ref).fragment(path);
 
